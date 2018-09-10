@@ -10,7 +10,7 @@ Also, it will calculate totals for different teams, `bug`s, `spike`s, and regula
 ### Installation
 This script is tampermonkey dependent. 
 1. Install tampermonkey (TM)
-1. Add the script to tampermonkey (<ctrl>+c, <ctrl>+v)
+1. Add the contents of [main.js](./main.js) to tampermonkey (\<ctrl>+c, \<ctrl>+v)
 1. be sure to set your url matches (in TM)  so you can access your projects
 1. set it to run in the context menu (in TM)
   
