@@ -20,7 +20,7 @@ When you want to check points click `Calc Points!` in your context menu. Points 
 ### Use with Multiple Teams
 Calc points works just fine if you use the standard `1`,`2`,`3`,`5`,`8`,`13`... but if you have multiple teams in a single board and you're focusing on real algility you know that point-values don't mix well between teams. Calc Points has your back here. If you suffix a specific team's points with ` - <team abbreviation>` and you use that point label suffix consistently for that team across all repos, calc points will be able to break out point totals for the stories that team has pointed.
 
-Example, two teams `Banana` and `For Scale`. You might have the abbreviations `BNA` and `FS`. You'd have two sets of labels on each repo, one that looked something like `1 -BNA`,`2 - BNA`,`3 - BNA` ... another that looked like `1 -FS`,`2 - FS`,`3 - FS` and so on.
+Example, two teams `Banana` and `For Scale`. You might have the abbreviations `BNA` and `FS`. You'd have two sets of labels on each repo, one that looked something like `1 -BNA`,`2 - BNA`,`3 - BNA` ... another that looked like `1 - FS`,`2 - FS`,`3 - FS` and so on.
 
 **Note:** *You must* separate the points from the team name with ` - ` (a single space on either side of the dash). If you don't, your points totals will be off.
 
