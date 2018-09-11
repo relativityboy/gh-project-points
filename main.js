@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Calc Points!
 // @namespace    http://tampermonkey.net/
-// @version      0.2
+// @version      0.2.1
 // @description  Calculate the points in each column
 // @author       relativityboy
 // @match        https://github.com/orgs/*
@@ -138,6 +138,8 @@
     window.columnDataMatrix = {};
 
     columns.map(column => {
+        const colName = column.getElementsByClassName('js-project-column-name')[0].innerHTML;
+        
         if(column.firstElementChild.getElementsByClassName('js-points-container').length == 0) {
             column.firstElementChild.innerHTML += `<div class="js-points-container hide-sm position-relative p-sm-2">wait</div>`
         }
@@ -156,6 +158,7 @@
         });
 
         window.columnDataMatrix[column.dataset.id] = {
+            name:colName,
             column,
             pointsByGroup
         }
