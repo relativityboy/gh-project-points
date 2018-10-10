@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Calc Points!
 // @namespace    http://tampermonkey.net/
-// @version      0.2.1
+// @version      0.3.0
 // @description  Calculate the points in each column
 // @author       relativityboy
 // @match        https://github.com/orgs/*
@@ -70,7 +70,7 @@
             return this.points.bug + this.points.story + this.points.spike;
         }
     }
-    
+
 
     function parsePointsFromIssueElement(issueEl) {
         const href = issueEl.getElementsByClassName(EL_CLASS_ISSUE_HREF)[0].getAttribute(EL_ATR_HREF);
@@ -133,38 +133,51 @@
         return pointsByGroup;
     }
 
-    const columns = toArray(window.document.getElementsByClassName('project-column'));
+    function runCalcPoints() {
 
-    window.columnDataMatrix = {};
+        const columns = toArray(window.document.getElementsByClassName('project-column'));
 
-    columns.map(column => {
-        const colName = column.getElementsByClassName('js-project-column-name')[0].innerHTML;
-        
-        if(column.firstElementChild.getElementsByClassName('js-points-container').length == 0) {
-            column.firstElementChild.innerHTML += `<div class="js-points-container hide-sm position-relative p-sm-2">wait</div>`
-        }
-        const pointsContainer = column.firstElementChild.getElementsByClassName('js-points-container')[0];
-        pointsContainer.innerHTML = '';
+        const columnDataMatrix = {};
 
-        const colHeader = column.firstElementChild.getElementsByTagName('h4')[0];
-        const pointsByGroup = calculatePointsFromColumnElement(document.getElementById('column-cards-' + column.dataset.id));
+        columns.map(column => {
+            const colName = column.getElementsByClassName('js-project-column-name')[0].innerHTML;
 
-        Object.values(pointsByGroup).map(groupPoints => {
-            if(groupPoints.totalPoints > 0) {
-                const groupName = (groupPoints.groupName != GENERIC_GROUP)? groupPoints.groupName + ' - ' : '';
-                pointsContainer.innerHTML += `<span class="Counter Counter--gray-dark mr-1 position-relative js-column-card-count" title="${groupPoints.title} total/story/spike/bug">${groupName}${groupPoints.totalPoints} - ${groupPoints.storyPoints} / ${groupPoints.spikePoints} / ${groupPoints.bugPoints}</span>`;
+            if(column.firstElementChild.getElementsByClassName('js-points-container').length == 0) {
+                column.firstElementChild.innerHTML += `<div class="js-points-container hide-sm position-relative p-sm-2">wait</div>`
+            }
+
+            const colHeader = column.firstElementChild.getElementsByTagName('h4')[0];
+            const pointsByGroup = calculatePointsFromColumnElement(document.getElementById('column-cards-' + column.dataset.id));
+
+            let pointsHTML = ''
+
+            Object.values(pointsByGroup).map(groupPoints => {
+                if(groupPoints.totalPoints > 0) {
+                    const groupName = (groupPoints.groupName != GENERIC_GROUP)? groupPoints.groupName + ' - ' : '';
+                    pointsHTML += `<span class="Counter Counter--gray-dark mr-1 position-relative js-column-card-count" title="${groupPoints.title} total/story/spike/bug">${groupName}${groupPoints.totalPoints} - ${groupPoints.storyPoints} / ${groupPoints.spikePoints} / ${groupPoints.bugPoints}</span>`;
+                }
+            });
+
+            const pointsContainer = column.firstElementChild.getElementsByClassName('js-points-container')[0];
+
+            if(pointsContainer.innerHTML != pointsHTML) {
+                pointsContainer.innerHTML = pointsHTML;
+            }
+
+            columnDataMatrix[column.dataset.id] = {
+                name:colName,
+                column,
+                pointsByGroup
             }
 
         });
+        window.columnDataMatrix = columnDataMatrix
+        setTimeout(runCalcPoints, 5000);
 
-        window.columnDataMatrix[column.dataset.id] = {
-            name:colName,
-            column,
-            pointsByGroup
-        }
+        return true;
 
-    });
-
-    console.log('calcPoints complete. Data available in window.columnDataMatrix: ', window.columnDataMatrix);
+    }
+    runCalcPoints();
+    console.log('calcPoints running. Data available in window.columnDataMatrix: ', window.columnDataMatrix);
 
 })();
