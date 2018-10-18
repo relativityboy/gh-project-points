@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Calc Points!
 // @namespace    http://tampermonkey.net/
-// @version      0.3.0
+// @version      0.4.0
 // @description  Calculate the points in each column
 // @author       relativityboy
 // @match        https://github.com/orgs/*
@@ -71,6 +71,40 @@
         }
     }
 
+    function toCSV(dataMatrix, groupName) {
+        const csvSrc = {};
+        Object.keys(dataMatrix).forEach((key) => {
+            const column = dataMatrix[key];
+            if(typeof column !== 'function') {
+                try {
+                    const gpc = column.pointsByGroup[groupName];
+                    if (gpc && column.name.indexOf('Done') === 0) {
+                        const sprintNum = (column.name === 'Done') ? 9999 : parseInt(column.name.replace('Done - Sprint ', ''));
+                        csvSrc[sprintNum] = {
+                            sprint: sprintNum,
+                            bug: gpc.bugPoints,
+                            spike: gpc.spikePoints,
+                            story: gpc.storyPoints,
+                            total: gpc.totalPoints
+                        };
+                    }
+                } catch(e) {
+                    console.log(e, column);
+                }
+            }
+        });
+
+        const csv = Object.keys(csvSrc).sort((a,b) => (parseInt(a) < parseInt(b))? -1 : ((parseInt(a) > parseInt(b))? 1 : 0)).reduce((accumulator, key) => {
+            const sprint = csvSrc[key];
+            if(sprint.sprint === 9999) {
+                sprint.sprint = 'Current';
+            }
+            return accumulator + `${sprint.sprint},${sprint.total},${sprint.story},${sprint.spike},${sprint.bug}\n`
+        }, 'Sprint, Total, Stories, Spikes, Bugs\n');
+        return csv;
+    }
+    window.toCSV = toCSV;
+
 
     function parsePointsFromIssueElement(issueEl) {
         const href = issueEl.getElementsByClassName(EL_CLASS_ISSUE_HREF)[0].getAttribute(EL_ATR_HREF);
@@ -137,7 +171,12 @@
 
         const columns = toArray(window.document.getElementsByClassName('project-column'));
 
-        const columnDataMatrix = {};
+        const columnDataMatrix = {toCSV:(groupName)=>{
+            if(!groupName) {
+                return 'Please specify a group';
+            }
+            return toCSV(columnDataMatrix, groupName);
+        }};
 
         columns.map(column => {
             const colName = column.getElementsByClassName('js-project-column-name')[0].innerHTML;
@@ -153,6 +192,11 @@
 
             Object.values(pointsByGroup).map(groupPoints => {
                 if(groupPoints.totalPoints > 0) {
+                    if(!columnDataMatrix.toCSV[groupPoints.groupName]) {
+                        columnDataMatrix.toCSV[groupPoints.groupName] = () => {
+                            return columnDataMatrix.toCSV(groupPoints.groupName);
+                        }
+                    }
                     const groupName = (groupPoints.groupName != GENERIC_GROUP)? groupPoints.groupName + ' - ' : '';
                     pointsHTML += `<span class="Counter Counter--gray-dark mr-1 position-relative js-column-card-count" title="${groupPoints.title} total/story/spike/bug">${groupName}${groupPoints.totalPoints} - ${groupPoints.storyPoints} / ${groupPoints.spikePoints} / ${groupPoints.bugPoints}</span>`;
                 }
