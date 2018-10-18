@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Calc Points!
 // @namespace    http://tampermonkey.net/
-// @version      0.4.0
-// @description  Calculate the points in each column
+// @version      0.4.1
+// @description  Calculate points by column & group
 // @author       relativityboy
 // @match        https://github.com/orgs/*
 // @grant        none
@@ -173,7 +173,8 @@
 
         const columnDataMatrix = {toCSV:(groupName)=>{
             if(!groupName) {
-                return 'Please specify a group';
+                console.log('No group name specified. Generating CSV for generic points.');
+                return toCSV(columnDataMatrix, GENERIC_GROUP);
             }
             return toCSV(columnDataMatrix, groupName);
         }};
